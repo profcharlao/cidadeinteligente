@@ -1,2 +1,2 @@
 # displaycsv-tds
-![CI/CD Status](https://github.com/SEU_USUARIO/SEU_REPOSITORIO/actions/workflows/ci-cd.yml/badge.svg)
+![CI/CD Status](https://github.com/profcharlao/repo/actions/workflows/ci-cd.yml/badge.svg)
