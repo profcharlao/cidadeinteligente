@@ -37,4 +37,10 @@ jobs:
         run: docker build -t cidadeinteligente_app .
         run: ls -lh target/*.jar || echo "Nenhum .jar encontrado!"
 
+      - name: 🔍 Verificar arquivos na pasta target
+        run: ls -lh target/
+
+
+        run: find . -type f
+
 
