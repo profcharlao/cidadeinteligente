@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prova Microsoft Word</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js"></script>
+  <style>
+    .btn-acesso-professor {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+    }
+    .question {
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+    }
+    #contador-caracteres {
+      font-size: 0.9em;
+      color: #6c757d;
+    }
+    #aviso-palavras {
+      color: red;
+      display: none;
+    }
+    #resultado {
+      display: none;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <button id="exitBtn" class="btn btn-danger btn-acesso-professor hidden">Sair</button>
+
+    <h1 class="text-center mb-4">PROVA MICROSOFT WORD</h1>
+
+    <!-- Formulário para o nome do aluno -->
+    <div id="form-nome" class="text-center">
+      <h3>Por favor, insira seus dados:</h3>
+      <input type="text" id="nome-aluno" class="form-control mb-3" placeholder="Nome completo" required>
+      <input type="text" id="turma-aluno" class="form-control mb-3" placeholder="Turma" required>
+      <input type="date" id="data-prova" class="form-control mb-3" required>
+      <button id="iniciar-quiz" class="btn btn-primary">Iniciar Prova</button>
+    </div>
+
+    <!-- Formulário do quiz -->
+    <div id="form-quiz" style="display: none;">
+      <form id="quiz-form">
+        <!-- Questões sobre cabeçalhos e rodapés -->
+        <div class="question">
+          <label>1. Qual guia do Word contém as opções para inserir cabeçalhos e rodapés?</label>
+          <div class="options">
+            <label><input type="radio" name="q1" value="a"> a) Página Inicial</label><br>
+            <label><input type="radio" name="q1" value="b"> b) Inserir</label><br>
+            <label><input type="radio" name="q1" value="c"> c) Layout</label><br>
+            <label><input type="radio" name="q1" value="d"> d) Revisão</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>2. Qual é a principal função dos cabeçalhos e rodapés no Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q2" value="a"> a) Adicionar informações consistentes em todas as páginas</label><br>
+            <label><input type="radio" name="q2" value="b"> b) Inserir imagens no documento</label><br>
+            <label><input type="radio" name="q2" value="c"> c) Criar tabelas de conteúdo</label><br>
+            <label><input type="radio" name="q2" value="d"> d) Format automaticamente o texto</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>3. Como inserir numeração de páginas automática no rodapé?</label>
+          <div class="options">
+            <label><input type="radio" name="q3" value="a"> a) Guia Inserir > Número de Página</label><br>
+            <label><input type="radio" name="q3" value="b"> b) Digitando manualmente em cada página</label><br>
+            <label><input type="radio" name="q3" value="c"> c) Guia Página Inicial > Número</label><br>
+            <label><input type="radio" name="q3" value="d"> d) Usando o atalho Ctrl+N</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>4. Como inserir uma data que se atualiza automaticamente no rodapé?</label>
+          <div class="options">
+            <label><input type="radio" name="q4" value="a"> a) Guia Inserir > Data e Hora (marcando "Atualizar Automaticamente")</label><br>
+            <label><input type="radio" name="q4" value="b"> b) Digitando manualmente a data</label><br>
+            <label><input type="radio" name="q4" value="c"> c) Copiando da internet</label><br>
+            <label><input type="radio" name="q4" value="d"> d) Usando uma macro complexa</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>5. Qual opção NÃO é uma boa prática para cabeçalhos e rodapés?</label>
+          <div class="options">
+            <label><input type="radio" name="q5" value="a"> a) Manter a simplicidade</label><br>
+            <label><input type="radio" name="q5" value="b"> b) Usar fontes legíveis</label><br>
+            <label><input type="radio" name="q5" value="c"> c) Incluir muitas informações detalhadas</label><br>
+            <label><input type="radio" name="q5" value="d"> d) Verificar a consistência em todas as páginas</label>
+          </div>
+        </div>
+
+        <!-- Questões sobre imagens -->
+        <div class="question">
+          <label>6. Qual guia contém a opção para inserir imagens no Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q6" value="a"> a) Página Inicial</label><br>
+            <label><input type="radio" name="q6" value="b"> b) Inserir</label><br>
+            <label><input type="radio" name="q6" value="c"> c) Layout</label><br>
+            <label><input type="radio" name="q6" value="d"> d) Revisão</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>7. Qual tecla deve ser pressionada ao redimensionar uma imagem para manter suas proporções?</label>
+          <div class="options">
+            <label><input type="radio" name="q7" value="a"> a) Ctrl</label><br>
+            <label><input type="radio" name="q7" value="b"> b) Alt</label><br>
+            <label><input type="radio" name="q7" value="c"> c) Shift</label><br>
+            <label><input type="radio" name="q7" value="d"> d) Tab</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>8. Qual opção NÃO é uma ferramenta de formatação de imagens no Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q8" value="a"> a) Recortar</label><br>
+            <label><input type="radio" name="q8" value="b"> b) Remover Fundo</label><br>
+            <label><input type="radio" name="q8" value="c"> c) Adicionar Legenda</label><br>
+            <label><input type="radio" name="q8" value="d"> d) Converter para PDF</label>
+          </div>
+        </div>
+
+        <!-- Questões sobre hiperlinks -->
+        <div class="question">
+          <label>9. Qual atalho de teclado é usado para inserir um hiperlink no Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q9" value="a"> a) Ctrl + H</label><br>
+            <label><input type="radio" name="q9" value="b"> b) Ctrl + K</label><br>
+            <label><input type="radio" name="q9" value="c"> c) Ctrl + L</label><br>
+            <label><input type="radio" name="q9" value="d"> d) Ctrl + I</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>10. Para criar um link que abre um email com destinatário pré-definido, qual prefixo usar?</label>
+          <div class="options">
+            <label><input type="radio" name="q10" value="a"> a) mailto:</label><br>
+            <label><input type="radio" name="q10" value="b"> b) email:</label><br>
+            <label><input type="radio" name="q10" value="c"> c) sendto:</label><br>
+            <label><input type="radio" name="q10" value="d"> d) contact:</label>
+          </div>
+        </div>
+
+        <!-- Questões sobre controle ortográfico e quebras -->
+        <div class="question">
+          <label>11. Qual é a principal função do controle ortográfico no Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q11" value="a"> a) Verificar erros de ortografia e gramática</label><br>
+            <label><input type="radio" name="q11" value="b"> b) Format automaticamente o documento</label><br>
+            <label><input type="radio" name="q11" value="c"> c) Criar índices automáticos</label><br>
+            <label><input type="radio" name="q11" value="d"> d) Inserir cabeçalhos e rodapés</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>12. Qual é uma limitação do controle ortográfico do Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q12" value="a"> a) Não identifica todos os erros de contexto</label><br>
+            <label><input type="radio" name="q12" value="b"> b) Não funciona em documentos longos</label><br>
+            <label><input type="radio" name="q12" value="c"> c) Não permite adicionar palavras ao dicionário</label><br>
+            <label><input type="radio" name="q12" value="d"> d) Só funciona em inglês</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>13. Qual atalho de teclado insere uma quebra de página simples no Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q13" value="a"> a) Ctrl + Enter</label><br>
+            <label><input type="radio" name="q13" value="b"> b) Alt + Enter</label><br>
+            <label><input type="radio" name="q13" value="c"> c) Shift + Enter</label><br>
+            <label><input type="radio" name="q13" value="d"> d) Ctrl + Shift + Enter</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>14. Qual tipo de quebra divide o documento em partes com formatações diferentes?</label>
+          <div class="options">
+            <label><input type="radio" name="q14" value="a"> a) Quebra de página simples</label><br>
+            <label><input type="radio" name="q14" value="b"> b) Quebra de seção</label><br>
+            <label><input type="radio" name="q14" value="c"> c) Quebra de linha</label><br>
+            <label><input type="radio" name="q14" value="d"> d) Quebra de coluna</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>15. Qual NÃO é uma boa prática com quebras de página?</label>
+          <div class="options">
+            <label><input type="radio" name="q15" value="a"> a) Evitar quebras desnecessárias</label><br>
+            <label><input type="radio" name="q15" value="b"> b) Revisar o layout após inserir quebras</label><br>
+            <label><input type="radio" name="q15" value="c"> c) Usar muitas quebras em um mesmo parágrafo</label><br>
+            <label><input type="radio" name="q15" value="d"> d) Usar quebras para evitar títulos isolados</label>
+          </div>
+        </div>
+
+        <!-- Questões adicionais -->
+        <div class="question">
+          <label>16. Qual é a principal vantagem de usar imagens em documentos do Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q16" value="a"> a) Melhorar a apresentação visual e facilitar a compreensão</label><br>
+            <label><input type="radio" name="q16" value="b"> b) Aumentar automaticamente o número de páginas</label><br>
+            <label><input type="radio" name="q16" value="c"> c) Substituir a necessidade de texto</label><br>
+            <label><input type="radio" name="q16" value="d"> d) Ocultar erros ortográficos</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>17. Como configurar cabeçalhos diferentes para páginas ímpares e pares?</label>
+          <div class="options">
+            <label><input type="radio" name="q17" value="a"> a) Guia Layout > Configurar Página > Marcar opção no menu Layout</label><br>
+            <label><input type="radio" name="q17" value="b"> b) Guia Inserir > Configurar Página > Marcar opção no menu Layout</label><br>
+            <label><input type="radio" name="q17" value="c"> c) Guia Página Inicial > Configurar Página > Marcar opção no menu Layout</label><br>
+            <label><input type="radio" name="q17" value="d"> d) Não é possível ter cabeçalhos diferentes</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>18. Qual é a principal vantagem de usar hiperlinks em vez de URLs completos no texto?</label>
+          <div class="options">
+            <label><input type="radio" name="q18" value="a"> a) Melhorar a legibilidade e aparência do documento</label><br>
+            <label><input type="radio" name="q18" value="b"> b) Ocultar o destino do link</label><br>
+            <label><input type="radio" name="q18" value="c"> c) Evitar que o link seja copiado</label><br>
+            <label><input type="radio" name="q18" value="d"> d) Nenhuma, é melhor usar URLs completos</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>19. Qual opção NÃO é um exemplo de uso de imagens em documentos do Word?</label>
+          <div class="options">
+            <label><input type="radio" name="q19" value="a"> a) Trabalhos escolares</label><br>
+            <label><input type="radio" name="q19" value="b"> b) Relatórios profissionais</label><br>
+            <label><input type="radio" name="q19" value="c"> c) Substituir todo o texto por imagens</label><br>
+            <label><input type="radio" name="q19" value="d"> d) Apresentações e panfletos</label>
+          </div>
+        </div>
+
+        <div class="question">
+          <label>20. Qual é a melhor maneira de garantir que os links em um documento estejam sempre atualizados?</label>
+          <div class="options">
+            <label><input type="radio" name="q20" value="a"> a) Verificar periodicamente e atualizar manualmente</label><br>
+            <label><input type="radio" name="q20" value="b"> b) Usar apenas links internos</label><br>
+            <label><input type="radio" name="q20" value="c"> c) Não usar links no documento</label><br>
+            <label><input type="radio" name="q20" value="d"> d) Os links se atualizam automaticamente</label>
+          </div>
+        </div>
+
+        <!-- Redação -->
+        <div class="question">
+          <label for="redacao">
+            <b>21. Escreva uma redação sobre:</b><i>"A importância dos recursos avançados do Microsoft Word (cabeçalhos, rodapés, imagens, hiperlinks e controle ortográfico) na criação de documentos profissionais."</i>
+          <br><br>
+          </label><br><br>
+          
+          <p>O texto deve conter:</p>
+          <ul>
+            <li>Pelo menos 100 palavras</li>
+            <li>Pelo menos 777 caracteres</li>
+            <li>As seguintes palavras-chave:</li>
+            <ul>
+              <li>"cabeçalhos"</li>
+              <li>"rodapés"</li>
+              <li>"imagens"</li>
+              <li>"hiperlinks"</li>
+              <li>"controle ortográfico"</li>
+              <li>"profissional"</li>
+              <li>"organização"</li>
+              <li>"documento"</li>
+              <li>"formatação"</li>
+              <li>"qualidade"</li>
+            </ul>
+          </ul>
+          
+          <textarea id="redacao" placeholder="Digite sua redação"></textarea><br>
+          
+          <!-- Contador de caracteres da redação -->
+          <div id="contador-caracteres">Caracteres: 0 | Palavras: 0</div>
+          
+          <!-- Aviso de palavras -->
+          <div id="aviso-palavras" style="color: red; display: none;">A redação deve conter pelo menos 100 palavras.</div>
+        </div>
+        
+        <button type="submit" class="btn btn-success">Enviar Prova</button>
+      </form>
+    </div>
+
+    <!-- Resultados -->
+    <div id="resultado" class="mt-4" style="display:none;">
+      <h3 id="resultado-titulo">Seu resultado da prova</h3>
+      <div class="mb-4">
+        <p><strong>Nome:</strong> <span id="result-nome"></span></p>
+        <p><strong>Turma:</strong> <span id="result-turma"></span></p>
+        <p><strong>Data:</strong> <span id="result-data"></span></p>
+      </div>
+      
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Questões Objetivas</h5>
+        </div>
+        <div class="card-body">
+          <p id="resultado-pontuacao"></p>
+        </div>
+      </div>
+      
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Redação</h5>
+        </div>
+        <div class="card-body">
+          <strong>Sua redação:</strong>
+          <p id="texto-redacao"></p>
+          <p id="pontuacao-redacao"></p>
+          <div id="palavras-chave-encontradas"></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5>Nota Final</h5>
+        </div>
+        <div class="card-body">
+          <h4 id="nota-final"></h4>
+          <div id="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+    // Configurações do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAFGYvz7tR3j_lW1ZucmIaxWbaUf0wkBg4",
+      authDomain: "avaliacao-6911c.firebaseapp.com",
+      databaseURL: "https://avaliacao-6911c-default-rtdb.firebaseio.com",
+      projectId: "avaliacao-6911c",
+      storageBucket: "avaliacao-6911c.appspot.com",
+      messagingSenderId: "256228027801",
+      appId: "1:256228027801:web:d9a0b76aab45c49664b708"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Respostas corretas do quiz
+    const respostasCorretas = {
+      q1: "b", q2: "a", q3: "a", q4: "a", q5: "c",
+      q6: "b", q7: "c", q8: "d", q9: "b", q10: "a",
+      q11: "a", q12: "a", q13: "a", q14: "b", q15: "c",
+      q16: "a", q17: "a", q18: "a", q19: "c", q20: "a"
+    };
+
+    // Palavras-chave para a redação
+    const palavrasChaveRedacao = [
+      "cabeçalhos", "rodapés", "imagens", "hiperlinks", 
+      "controle ortográfico", "profissional", "organização", 
+      "documento", "formatação", "qualidade"
+    ];
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Elementos
+      const formNome = document.getElementById('form-nome');
+      const formQuiz = document.getElementById('form-quiz');
+      const resultado = document.getElementById('resultado');
+      const exitBtn = document.getElementById('exitBtn');
+      const iniciarQuizBtn = document.getElementById('iniciar-quiz');
+      const quizForm = document.getElementById('quiz-form');
+      const redacaoTextarea = document.getElementById('redacao');
+      const contadorCaracteres = document.getElementById('contador-caracteres');
+      const avisoPalavras = document.getElementById('aviso-palavras');
+      const submitBtn = document.querySelector('button[type="submit"]');
+      
+      // Elementos de resultado
+      const resultNome = document.getElementById('result-nome');
+      const resultTurma = document.getElementById('result-turma');
+      const resultData = document.getElementById('result-data');
+      const resultadoPontuacao = document.getElementById('resultado-pontuacao');
+      const textoRedacao = document.getElementById('texto-redacao');
+      const pontuacaoRedacao = document.getElementById('pontuacao-redacao');
+      const palavrasChaveEncontradas = document.getElementById('palavras-chave-encontradas');
+      const notaFinal = document.getElementById('nota-final');
+      const feedback = document.getElementById('feedback');
+
+      // Variáveis
+      let alunoData = {};
+      let provaEnviada = false;
+
+      // Função para sanitizar nomes para o Firebase
+      function sanitizarNome(nome) {
+        return nome.trim().replace(/[\.\#\$\[\]\/]/g, '_');
+      }
+
+      // Função para contar palavras
+      function contarPalavras(texto) {
+        return texto.trim().split(/\s+/).filter(word => word.length > 0).length;
+      }
+
+      // Função para contar caracteres (sem espaços múltiplos)
+      function contarCaracteres(texto) {
+        return texto.replace(/\s+/g, ' ').trim().length;
+      }
+
+      // Função para verificar palavras-chave na redação
+      function verificarPalavrasChave(texto) {
+        const encontradas = [];
+        const textoLower = texto.toLowerCase();
+        
+        palavrasChaveRedacao.forEach(palavra => {
+          if (textoLower.includes(palavra.toLowerCase())) {
+            encontradas.push(palavra);
+          }
+        });
+        
+        return encontradas;
+      }
+
+      // Função para calcular a pontuação da redação
+      function calcularPontuacaoRedacao(texto) {
+        const palavras = contarPalavras(texto);
+        const palavrasChaveEncontradas = verificarPalavrasChave(texto).length;
+        
+        // Pontuação por palavras (máximo 5 pontos)
+        let pontuacaoPalavras = Math.min(5, (palavras / 100) * 5);
+        
+        // Pontuação por palavras-chave (máximo 5 pontos)
+        let pontuacaoChaves = (palavrasChaveEncontradas / 10) * 5;
+        
+        // Total (máximo 10 pontos)
+        return {
+          total: (pontuacaoPalavras + pontuacaoChaves).toFixed(1),
+          palavrasChave: palavrasChaveEncontradas
+        };
+      }
+
+      // Função para calcular a pontuação do quiz
+      function calcularPontuacaoQuiz(respostas) {
+        let pontuacao = 0;
+        
+        Object.keys(respostasCorretas).forEach(pergunta => {
+          if (respostas[pergunta] === respostasCorretas[pergunta]) {
+            pontuacao++;
+          }
+        });
+        
+        // Converter para escala de 0-10
+        return ((pontuacao / 20) * 10).toFixed(1);
+      }
+
+      // Função para exibir palavras-chave encontradas
+      function exibirPalavrasChave(encontradas) {
+        let html = '<p>Palavras-chave encontradas: ';
+        
+        if (encontradas.length === 0) {
+          html += 'Nenhuma</p>';
+        } else {
+          html += encontradas.map(p => `<span class="keyword">${p}</span>`).join(', ') + '</p>';
+        }
+        
+        palavrasChaveEncontradas.innerHTML = html;
+      }
+
+      // Função para exibir feedback baseado na nota
+      function exibirFeedback(nota) {
+        let feedbackText = '';
+        
+        if (nota >= 9) {
+          feedbackText = '<div class="alert alert-success">Excelente! Você demonstrou um ótimo domínio dos recursos do Word.</div>';
+        } else if (nota >= 7) {
+          feedbackText = '<div class="alert alert-info">Bom trabalho! Seu conhecimento do Word é satisfatório.</div>';
+        } else if (nota >= 5) {
+          feedbackText = '<div class="alert alert-warning">Você pode melhorar! Revise os conteúdos estudados.</div>';
+        } else {
+          feedbackText = '<div class="alert alert-danger">Estude mais os recursos do Word para melhorar seu desempenho.</div>';
+        }
+        
+        feedback.innerHTML = feedbackText;
+      }
+
+      // Iniciar prova
+      iniciarQuizBtn.addEventListener('click', function() {
+        const nome = document.getElementById('nome-aluno').value.trim();
+        const turma = document.getElementById('turma-aluno').value.trim();
+        const data = document.getElementById('data-prova').value;
+        
+        if (!nome || !turma || !data) {
+          alert('Por favor, preencha todos os campos antes de iniciar a prova.');
+          return;
+        }
+        
+        // Verificar se o aluno já fez a prova
+        const alunoRef = ref(db, 'provas_word/' + sanitizarNome(nome));
+        get(alunoRef).then((snapshot) => {
+          if (snapshot.exists()) {
+            alert('Você já realizou esta prova anteriormente.');
+          } else {
+            // Armazenar dados do aluno
+            alunoData = {
+              nome: nome,
+              turma: turma,
+              data: data,
+              inicio: new Date().toISOString()
+            };
+            
+            // Mostrar formulário da prova
+            formNome.style.display = 'none';
+            formQuiz.style.display = 'block';
+            exitBtn.classList.remove('hidden');
+          }
+        }).catch((error) => {
+          console.error('Erro ao verificar aluno:', error);
+          alert('Erro ao verificar dados do aluno. Tente novamente.');
+        });
+      });
+
+      // Atualizar contador de redação
+      redacaoTextarea.addEventListener('input', function() {
+        const texto = this.value;
+        const numPalavras = contarPalavras(texto);
+        const numCaracteres = contarCaracteres(texto);
+        
+        contadorCaracteres.textContent = `Caracteres: ${numCaracteres} | Palavras: ${numPalavras}`;
+        
+        // Mostrar/ocultar aviso de mínimo de palavras
+        if (numPalavras < 100) {
+          avisoPalavras.style.display = 'block';
+          submitBtn.disabled = true;
+        } else {
+          avisoPalavras.style.display = 'none';
+          submitBtn.disabled = false;
+        }
+      });
+
+      // Enviar prova
+      quizForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Verificar se todas as questões foram respondidas
+        let todasRespondidas = true;
+        let respostas = {};
+        
+        for (let i = 1; i <= 20; i++) {
+          const pergunta = 'q' + i;
+          const resposta = document.querySelector(`input[name="${pergunta}"]:checked`);
+          
+          if (!resposta) {
+            todasRespondidas = false;
+            break;
+          }
+          
+          respostas[pergunta] = resposta.value;
+        }
+        
+        if (!todasRespondidas) {
+          alert('Por favor, responda todas as questões antes de enviar a prova.');
+          return;
+        }
+        
+        // Verificar redação
+        const redacao = redacaoTextarea.value;
+        if (contarPalavras(redacao) < 100 || contarCaracteres(redacao) < 777) {
+          alert('Sua redação não atende aos requisitos mínimos de tamanho.');
+          return;
+        }
+        
+        // Calcular pontuações
+        const pontuacaoQuiz = calcularPontuacaoQuiz(respostas);
+        const pontuacaoRed = calcularPontuacaoRedacao(redacao);
+        const notaFinalValue = ((parseFloat(pontuacaoQuiz) + parseFloat(pontuacaoRed.total)) / 2);
+        
+        // Salvar no Firebase
+        const provaData = {
+          ...alunoData,
+          respostas: respostas,
+          redacao: redacao,
+          pontuacaoQuiz: pontuacaoQuiz,
+          pontuacaoRedacao: pontuacaoRed.total,
+          notaFinal: notaFinalValue.toFixed(1),
+          envio: new Date().toISOString()
+        };
+        
+        const alunoRef = ref(db, 'provas_word/' + sanitizarNome(alunoData.nome));
+        set(alunoRef, provaData)
+          .then(() => {
+            // Exibir resultados
+            formQuiz.style.display = 'none';
+            resultado.style.display = 'block';
+            
+            // Preencher dados do aluno
+            resultNome.textContent = alunoData.nome;
+            resultTurma.textContent = alunoData.turma;
+            resultData.textContent = alunoData.data;
+            
+            // Preencher resultados
+            resultadoPontuacao.textContent = `Acertos: ${(pontuacaoQuiz / 10 * 20).toFixed(0)} de 20 | Pontuação: ${pontuacaoQuiz}/10`;
+            textoRedacao.textContent = redacao;
+            pontuacaoRedacao.textContent = `Pontuação da redação: ${pontuacaoRed.total}/10`;
+            notaFinal.textContent = `Nota final: ${notaFinalValue.toFixed(1)}/10`;
+            
+            // Exibir palavras-chave encontradas
+            const palavrasEncontradas = verificarPalavrasChave(redacao);
+            exibirPalavrasChave(palavrasEncontradas);
+            
+            // Exibir feedback
+            exibirFeedback(notaFinalValue);
+            
+            // Marcar prova como enviada
+            provaEnviada = true;
+          })
+          .catch((error) => {
+            console.error('Erro ao enviar prova:', error);
+            alert('Erro ao enviar prova. Tente novamente.');
+          });
+      });
+
+      // Botão Sair
+      exitBtn.addEventListener('click', function() {
+        if (provaEnviada || confirm('Deseja realmente sair? Seu progresso não será salvo.')) {
+          window.close();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

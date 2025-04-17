@@ -78,32 +78,27 @@ Então, ao clonar o repositório de cada conta:
 
 Para a conta profcharlao:
 
-bash
-Copiar código
+
 git clone git@github.com:profcharlao/repositorio.git
 Para a conta CharlesThomaz:
 
-bash
-Copiar código
+
 git clone git@github.com-charles:CharlesThomaz/repositorio.git
 O Git saberá automaticamente qual chave SSH usar sem precisar de alias.
 
 ✅ 5. Verificar qual conta está usada no push/pull
 Dentro do repositório:
 
-bash
-Copiar código
+
 git remote -v
 Você verá algo como:
 
-scss
-Copiar código
 origin  git@github.com:profcharlao/repositorio.git (fetch)
 origin  git@github.com:profcharlao/repositorio.git (push)
+
 Ou, para a outra conta:
 
-scss
-Copiar código
+
 origin  git@github.com-charles:CharlesThomaz/repositorio.git (fetch)
 origin  git@github.com-charles:CharlesThomaz/repositorio.git (push)
-Se 
+ 

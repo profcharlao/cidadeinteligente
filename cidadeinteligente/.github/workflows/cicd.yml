@@ -31,3 +31,4 @@ jobs:
         with:
           name: app-jar
           path: target/*.jar
+S

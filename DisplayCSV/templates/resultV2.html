@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados dos Alunos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .table-responsive { margin-top: 20px; }
+    .results-panel { max-width: 1200px; margin: 30px auto; padding: 20px; }
+    .danger-zone { border: 2px solid #dc3545; padding: 15px; border-radius: 5px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container results-panel">
+    <h1 class="text-center mb-4">Resultados dos Alunos</h1>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Filtros</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <label for="filterTurma" class="form-label">Filtrar por Turma:</label>
+            <select id="filterTurma" class="form-select">
+              <option value="">Todas as turmas</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="filterNome" class="form-label">Buscar por Nome:</label>
+            <input type="text" id="filterNome" class="form-control" placeholder="Digite o nome do aluno">
+          </div>
+          <div class="col-md-4">
+            <label for="filterNota" class="form-label">Filtrar por Nota:</label>
+            <select id="filterNota" class="form-select">
+              <option value="">Todas as notas</option>
+              <option value="9">Acima de 9</option>
+              <option value="7">7 a 9</option>
+              <option value="5">5 a 7</option>
+              <option value="0">Abaixo de 5</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tabela de resultados -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5>Resultados</h5>
+        <div>
+          <span id="totalAlunos" class="badge bg-primary">0 alunos</span>
+          <span id="mediaTurma" class="badge bg-success ms-2">Média: 0</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Turma</th>
+                <th>Data</th>
+                <th>Questões</th>
+                <th>Redação</th>
+                <th>Nota Final</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTable">
+              <!-- Dados serão inseridos aqui pelo JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Zona de perigo - Limpar banco de dados -->
+    <div class="danger-zone mt-5">
+      <h4 class="text-danger">Administração</h4>
+      <p class="text-muted">Ações nesta seção são irreversíveis.</p>
+      
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h5>Limpar Banco de Dados</h5>
+          <p class="mb-0">Removerá todos os resultados armazenados permanentemente.</p>
+        </div>
+        <button id="clearDbBtn" class="btn btn-danger">Limpar Tudo</button>
+      </div>
+    </div>
+    
+    <!-- Modal de confirmação -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Confirmação</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="modalBody">
+            Tem certeza que deseja prosseguir?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAFGYvz7tR3j_lW1ZucmIaxWbaUf0wkBg4",
+      authDomain: "avaliacao-6911c.firebaseapp.com",
+      databaseURL: "https://avaliacao-6911c-default-rtdb.firebaseio.com",
+      projectId: "avaliacao-6911c",
+      storageBucket: "avaliacao-6911c.appspot.com",
+      messagingSenderId: "256228027801",
+      appId: "1:256228027801:web:d9a0b76aab45c49664b708"
+    };
+
+    // Inicialize o Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Elementos da interface
+    const resultsTable = document.getElementById('resultsTable');
+    const filterTurma = document.getElementById('filterTurma');
+    const filterNome = document.getElementById('filterNome');
+    const filterNota = document.getElementById('filterNota');
+    const totalAlunos = document.getElementById('totalAlunos');
+    const mediaTurma = document.getElementById('mediaTurma');
+    const clearDbBtn = document.getElementById('clearDbBtn');
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    const confirmActionBtn = document.getElementById('confirmActionBtn');
+    const modalBody = document.getElementById('modalBody');
+    const modalTitle = document.getElementById('modalTitle');
+
+    // Variáveis globais
+    let allResults = [];
+    let currentAction = null;
+
+    // Função para carregar os resultados
+    function loadResults() {
+      const resultsRef = ref(db, 'provas_word');
+      
+      onValue(resultsRef, (snapshot) => {
+        allResults = [];
+        const turmasSet = new Set();
+        
+        if (snapshot.exists()) {
+          snapshot.forEach((childSnapshot) => {
+            const result = childSnapshot.val();
+            result.id = childSnapshot.key;
+            allResults.push(result);
+            turmasSet.add(result.turma);
+          });
+          
+          // Atualizar filtro de turmas
+          updateTurmaFilter(Array.from(turmasSet));
+          
+          // Exibir todos os resultados inicialmente
+          filterResults();
+        } else {
+          resultsTable.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum resultado encontrado</td></tr>';
+          totalAlunos.textContent = '0 alunos';
+          mediaTurma.textContent = 'Média: 0';
+        }
+      });
+    }
+
+    // Função para atualizar o filtro de turmas
+    function updateTurmaFilter(turmas) {
+      filterTurma.innerHTML = '<option value="">Todas as turmas</option>';
+      turmas.sort().forEach(turma => {
+        filterTurma.innerHTML += `<option value="${turma}">${turma}</option>`;
+      });
+    }
+
+    // Função para filtrar resultados
+    function filterResults() {
+      const turmaFilter = filterTurma.value;
+      const nomeFilter = filterNome.value.toLowerCase();
+      const notaFilter = filterNota.value;
+      
+      let filteredResults = [...allResults];
+      
+      // Aplicar filtros
+      if (turmaFilter) {
+        filteredResults = filteredResults.filter(r => r.turma === turmaFilter);
+      }
+      
+      if (nomeFilter) {
+        filteredResults = filteredResults.filter(r => 
+          r.nome.toLowerCase().includes(nomeFilter)
+        );
+      }
+      
+      if (notaFilter) {
+        const notaNum = parseFloat(notaFilter);
+        filteredResults = filteredResults.filter(r => {
+          const nota = parseFloat(r.notaFinal);
+          if (notaNum === 9) return nota > 9;
+          if (notaNum === 7) return nota >= 7 && nota <= 9;
+          if (notaNum === 5) return nota >= 5 && nota < 7;
+          if (notaNum === 0) return nota < 5;
+          return true;
+        });
+      }
+      
+      // Exibir resultados filtrados
+      displayResults(filteredResults);
+    }
+
+    // Função para exibir resultados na tabela
+    function displayResults(results) {
+      if (results.length === 0) {
+        resultsTable.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum resultado encontrado com os filtros atuais</td></tr>';
+        totalAlunos.textContent = '0 alunos';
+        mediaTurma.textContent = 'Média: 0';
+        return;
+      }
+      
+      // Ordenar por nome
+      results.sort((a, b) => a.nome.localeCompare(b.nome));
+      
+      // Calcular média
+      const total = results.reduce((sum, result) => sum + parseFloat(result.notaFinal), 0);
+      const media = (total / results.length).toFixed(2);
+      
+      // Atualizar totais
+      totalAlunos.textContent = `${results.length} aluno${results.length !== 1 ? 's' : ''}`;
+      mediaTurma.textContent = `Média: ${media}`;
+      
+      // Gerar linhas da tabela
+      let tableHTML = '';
+      
+      results.forEach(result => {
+        tableHTML += `
+          <tr>
+            <td>${result.nome}</td>
+            <td>${result.turma}</td>
+            <td>${formatDate(result.data)}</td>
+            <td>${result.pontuacaoQuiz}/10</td>
+            <td>${result.pontuacaoRedacao}/10</td>
+            <td><strong>${result.notaFinal}/10</strong></td>
+          </tr>
+        `;
+      });
+      
+      resultsTable.innerHTML = tableHTML;
+    }
+
+    // Função para formatar data
+    function formatDate(dateString) {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      return isNaN(date) ? dateString : date.toLocaleDateString('pt-BR');
+    }
+
+    // Função para limpar todo o banco de dados
+    function clearDatabase() {
+      const resultsRef = ref(db, 'provas_word');
+      
+      remove(resultsRef)
+        .then(() => {
+          console.log('Banco de dados limpo com sucesso');
+        })
+        .catch((error) => {
+          console.error('Erro ao limpar banco de dados:', error);
+          alert('Erro ao limpar banco de dados. Tente novamente.');
+        });
+    }
+
+    // Função para mostrar modal de confirmação
+    function showConfirmModal(title, message, action) {
+      modalTitle.textContent = title;
+      modalBody.textContent = message;
+      currentAction = action;
+      confirmModal.show();
+    }
+
+    // Event Listeners
+    filterTurma.addEventListener('change', filterResults);
+    filterNome.addEventListener('input', filterResults);
+    filterNota.addEventListener('change', filterResults);
+    
+    clearDbBtn.addEventListener('click', () => {
+      showConfirmModal(
+        'Limpar Banco de Dados',
+        'Tem certeza que deseja apagar TODOS os resultados? Esta ação é irreversível!',
+        clearDatabase
+      );
+    });
+    
+    confirmActionBtn.addEventListener('click', () => {
+      if (currentAction) {
+        currentAction();
+        confirmModal.hide();
+      }
+    });
+
+    // Inicialização
+    loadResults();
+  </script>
+</body>
+</html>
