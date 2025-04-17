@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🔄 Checkout do código
+      - name: 📥 Checkout do código
         uses: actions/checkout@v3
 
       - name: ☕️ Configurar Java 17
@@ -23,12 +23,18 @@ jobs:
       - name: 🧪 Build com Maven
         run: mvn clean package -DskipTests
 
-      - name: 🐳 Build da imagem Docker
-        run: docker build -t cidadeinteligente_app .
+      - name: 📂 Verificar se .jar existe
+        run: ls -lh target/*.jar || echo "Nenhum .jar encontrado!"
 
-      - name: 📂 Upload do artefato .jar (opcional)
+      - name: 📤 Upload do artefato .jar (se existir)
+        if: success() && always()
         uses: actions/upload-artifact@v3
         with:
           name: app-jar
           path: target/*.jar
-S
+
+      - name: 🐳 Build da imagem Docker
+        run: docker build -t cidadeinteligente_app .
+        run: ls -lh target/*.jar || echo "Nenhum .jar encontrado!"
+
+
