@@ -1,46 +1,27 @@
-name: CI/CD - Cidade Inteligente
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout do código
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: ☕️ Configurar Java 17
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🧪 Build com Maven
-        run: mvn clean package -DskipTests
+      - name: Build com Maven
+        run: mvn clean package
 
-      - name: 📂 Verificar se .jar existe
-        run: ls -lh target/*.jar || echo "Nenhum .jar encontrado!"
+      - name: Verificar arquivos gerados
+        run: |
+          ls -lh
+          ls -lh target/
 
-      - name: 📤 Upload do artefato .jar (se existir)
-        if: success() && always()
-        uses: actions/upload-artifact@v3
+      - name: Upload do JAR
+        uses: actions/upload-artifact@v3.1.3
         with:
           name: app-jar
           path: target/*.jar
-
-      - name: 🐳 Build da imagem Docker
-        run: docker build -t cidadeinteligente_app .
-        run: ls -lh target/*.jar || echo "Nenhum .jar encontrado!"
-
-      - name: 🔍 Verificar arquivos na pasta target
-        run: ls -lh target/
-
-
-        run: find . -type f
-
-
